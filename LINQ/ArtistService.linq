@@ -62,8 +62,8 @@ public ArtistEditView TestGetArtist(int artistID)
 	{
 		GetInnerException(ex).Message.Dump();
 	}
-	return null;
 	#endregion
+	return null;  //  Ensure a valid return value even on failure
 }
 #endregion
 
