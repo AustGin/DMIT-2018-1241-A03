@@ -1,11 +1,30 @@
-<Query Kind="Program" />
+<Query Kind="Program">
+  <Connection>
+    <ID>7f1d3e56-6447-48ab-b226-55cd6694ad85</ID>
+    <NamingServiceVersion>2</NamingServiceVersion>
+    <Persist>true</Persist>
+    <Server>.</Server>
+    <AllowDateOnlyTimeOnly>true</AllowDateOnlyTimeOnly>
+    <DeferDatabasePopulation>true</DeferDatabasePopulation>
+    <Database>ChinookSept2018</Database>
+    <DriverData>
+      <LegacyMFA>false</LegacyMFA>
+    </DriverData>
+  </Connection>
+</Query>
 
 void Main()
 {
 	try
 	{
 		//	passing in an empty first and last name
-		AggregateExceptionTest("", "");
+		// AggregateExceptionTest("", "");
+
+		//	passing an trackID larger than max TrackID
+		// ArgumentNullExceptionTest(10000);
+		
+		//	passing an invalid track ID (less than 1)
+		ExceptionTest(0);
 	}
 
 	#region catch all exception
@@ -47,9 +66,9 @@ public void AggregateExceptionTest(string firstName, string lastName)
 	//		for valid data
 	//		rule:	first name cannot be empty or null
 	//		rule:	last name cannot be empty or null
-	
+
 	// parameter validation
-	if(string.IsNullOrWhiteSpace(firstName))
+	if (string.IsNullOrWhiteSpace(firstName))
 	{
 		errorList.Add(new Exception("First name is required and cannot be empty"));
 	}
@@ -58,18 +77,81 @@ public void AggregateExceptionTest(string firstName, string lastName)
 	{
 		errorList.Add(new Exception("Last name is required and cannot be empty"));
 	}
-	
+	#endregion
+
 	/*
 		actual code for method
 	*/
 
-if(errorList.Count() > 0)
+	if (errorList.Count() > 0)
+	{
+		// throw the list of business processing error(s)
+		throw new AggregateException("Unable to proceed!  Check concerns", errorList);
+	}
+}
+
+public void ArgumentNullExceptionTest(int trackID)
 {
-	// throw the list of business processing error(s)
-	throw new AggregateException("Unable to proceed!  Check concerns", errorList);
-}
+	#region Business Logic and Parameter Exceptions
+	//	create a List<Exception> to contain all discovered errors
+	List<Exception> errorList = new List<Exception>();
 
+	//	Business Rules
+	//	There are processing rules that need to be satisfied
+	//		for valid data
+	//		rule:	Track must exist in the database
 
+	// parameter validation
+	var track = Tracks
+					.Where(x => x.TrackId == trackID)
+					.Select(x => x).FirstOrDefault();
+
+	if (track == null)
+	{
+		throw new ArgumentNullException($"No track found for Track ID: {trackID}");
+	}
 	#endregion
+
+	/*
+		actual code for method
+	*/
+
+	if (errorList.Count() > 0)
+	{
+		// throw the list of business processing error(s)
+		throw new AggregateException("Unable to proceed!  Check concerns", errorList);
+	}
 }
 
+public void ExceptionTest(int trackID)
+{
+	#region Business Logic and Parameter Exceptions
+	//	create a List<Exception> to contain all discovered errors
+	List<Exception> errorList = new List<Exception>();
+
+	//	Business Rules
+	//	There are processing rules that need to be satisfied
+	//		for valid data
+	//		rule:	Track ID must be valid
+
+	// parameter validation
+	//	This is a show stopper and no reason to go beyond this
+	//		point of code!!!
+
+
+	if (trackID < 1)
+	{
+		throw new Exception($"Track ID is invalid: {trackID}");
+	}
+	#endregion
+
+	/*
+		actual code for method
+	*/
+
+	if (errorList.Count() > 0)
+	{
+		// throw the list of business processing error(s)
+		throw new AggregateException("Unable to proceed!  Check concerns", errorList);
+	}
+}
