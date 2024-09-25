@@ -18,6 +18,7 @@
 //	or data processing operations.
 void Main()
 {
+	#region Get Artist (GetArtist)
 	//	Header information
 	Console.WriteLine("==========================");
 	Console.WriteLine("==========Artist Pass ============");
@@ -33,6 +34,25 @@ void Main()
 	//	Fail
 	//	rule: artistID must be valid
 	TestGetArtist(0).Dump("Fail - ArtistID must be valid");
+	#endregion
+
+	#region Get Artists (GetArtists)
+	//	Header information
+	Console.WriteLine("==========================");
+	Console.WriteLine("==========Artists Pass ============");
+	Console.WriteLine("==========================");
+	//	Pass
+	TestGetArtists("ABB").Dump("Pass - Valid artist name");
+	TestGetArtists("ABC").Dump("Pass - Valid name - No artists found");
+
+	//	Header information
+	Console.WriteLine("==========================");
+	Console.WriteLine("==========Artists Fail ============");
+	Console.WriteLine("==========================");
+	//	Fail
+	//	rule:	artist name is required
+	TestGetArtists(string.Empty).Dump("Fail - Artist name was empty");
+	#endregion
 }
 
 //	This region contains methods used for testing the functionality
@@ -65,6 +85,35 @@ public ArtistEditView TestGetArtist(int artistID)
 	#endregion
 	return null;  //  Ensure a valid return value even on failure
 }
+
+public List<ArtistEditView> TestGetArtists(string artistName)
+{
+	try
+	{
+		return GetArtists(artistName);
+	}
+
+	#region catch all exception
+	catch (AggregateException ex)
+	{
+		foreach (var error in ex.InnerExceptions)
+		{
+			error.Message.Dump();
+		}
+	}
+	catch (ArgumentNullException ex)
+	{
+		GetInnerException(ex).Message.Dump();
+	}
+
+	catch (Exception ex)
+	{
+		GetInnerException(ex).Message.Dump();
+	}
+	#endregion
+	return null;  //  Ensure a valid return value even on failure
+}
+
 #endregion
 
 //	This region contains support methods for testing
@@ -105,6 +154,37 @@ public ArtistEditView GetArtist(int artistID)
 				Name = x.Name
 			}).FirstOrDefault();
 }
+
+
+public List<ArtistEditView> GetArtists(string artistName)
+{
+	#region Business Logic and Parameter Exceptions
+	//	create a List<Exception> to contain all discovered errors
+	List<Exception> errorList = new List<Exception>();
+
+	//	Business Rules
+	//	There are processing rules that need to be satisfied
+	//		for valid data
+	//		rule:	artist name is required
+
+	if (string.IsNullOrWhiteSpace(artistName))
+	{
+		throw new ArgumentNullException("Artist name is required");
+	}
+	#endregion
+
+	return Artists
+			.Where(x => x.Name.ToUpper().Contains(artistName.ToUpper()))
+			.Select(x => new ArtistEditView
+			{
+				ArtistID = x.ArtistId,
+				Name = x.Name
+			})
+			.OrderBy(x => x.Name)
+			.ToList();
+}
+
+
 #endregion
 
 //	This region includes the view models used to 
