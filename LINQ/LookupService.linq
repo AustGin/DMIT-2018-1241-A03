@@ -21,124 +21,85 @@
 //	or data processing operations.
 void Main()
 {
-	#region Get Category (GetCategory)
+	#region Get Lookup (GetLookup)
 	//  Header information
 	Console.WriteLine("==================");
-	Console.WriteLine("=====  Get Category Pass  =====");
+	Console.WriteLine("=====  Get Lookup Pass  =====");
 	Console.WriteLine("==================");
 	//  Pass
-	TestGetCategory("Province").Dump("Pass - Valid category name");
-	TestGetCategory("People").Dump("Pass - Valid name - No Category found");
+	TestGetLookup("Alberta").Dump("Pass - Valid lookup name");
+	TestGetLookup("Alberta1").Dump("Pass - Valid name - No Lookup found");
 
 	//  Header information
 	Console.WriteLine();
 	Console.WriteLine("==================");
-	Console.WriteLine("=====  Get Category Fail  =====");
+	Console.WriteLine("=====  Get Lookup Fail  =====");
 	Console.WriteLine("==================");
 	//  Fail
-	//  rule:	Category name cannot be empty or null
-	TestGetCategory(string.Empty).Dump("Fail - Category name was empty");
+	//  rule:	Lookup name cannot be empty or null
+	//	string.Empty -> ""
+	TestGetLookup(string.Empty).Dump("Fail - Lookup name was empty");
 	#endregion
 
-	#region Add New Category
+	#region Add New Lookup
 	//  Header information
 	Console.WriteLine("==================");
-	Console.WriteLine("=====  Add New Category  =====");
+	Console.WriteLine("=====  Add New Lookup  =====");
 	Console.WriteLine("==================");
 
-	//  create a new category view model for adding/editing
-	CategoryView categoryView = new CategoryView();
+	//  create a new lookupView view model for adding/editing
+	LookupView lookupView = new LookupView();
 
-	//  create a placeholder for the category name
-	string categoryName = string.Empty;
-
-	//	update the category name with the placeholder
-	categoryView.CategoryName = categoryName;
-
-	//  get last 5 records from the category table 
-	//	before adding new category record
-	Categories.Skip(Categories.Count() - 5).Dump("Return last 5 records before adding new category");
-
-	//  Fail
+	// Fail
 	Console.WriteLine("==================");
-	Console.WriteLine("=====  Add New Category Fail =====");
+	Console.WriteLine("=====  Add New Lookup Fail  =====");
 	Console.WriteLine("==================");
 
-	//  rule: 	category name is required
-	TestAddEditCategory(categoryView).Dump("Fail - Category name was empty");
+	//		rule: 	category id is required
+	TestAddEditLookup(lookupView).Dump("Fail - Category ID is missing");
+	
+	//	get a list of categories
+	Categories.Take(100).Dump();
+	
+	// update category id with last valid category ID
+	lookupView.CategoryID = 2014;
+
+	// Fail
+	Console.WriteLine("==================");
+	Console.WriteLine("=====  Add New Lookup Fail  =====");
+	Console.WriteLine("==================");
+	//		rule: 	lookup name is required
+	TestAddEditLookup(lookupView).Dump("Fail - Missing lookup name");
 
 	//  Pass
 	Console.WriteLine("==================");
-	Console.WriteLine("=====  Add New Category Pass =====");
+	Console.WriteLine("=====  Add New Lookup Pass =====");
 	Console.WriteLine("==================");
+	//  get last 5 records from the lookup table 
+	//	before adding new lookup record
+	Lookups.Skip(Lookups.Count() - 5).Dump("Return last 5 records before adding new lookup");
 
-	//	update the category name with a valid random name
-	categoryName = GenerateName(6);
-	categoryView.CategoryName = categoryName;
-	TestAddEditCategory(categoryView).Dump($"Pass - Category has valid name: {categoryName}");
+	//	update the category name with the valid random eight character name
+	string lookupViewName = GenerateName(8);
+	lookupView.Name = lookupViewName;
+	TestAddEditLookup(lookupView).Dump($"Pass - Lookup has valid name {lookupViewName} & category ID");
 
-	//  get last 5 records from the category table 
-	//	after adding new category record
-	Categories.Skip(Categories.Count() - 5).Dump("Return last 5 records after adding new category");
+	//  get last 5 records from the lookup table 
+	//	after adding new lookup record
+	Lookups.Skip(Lookups.Count() - 5).Dump("Return last 5 records after adding new lookup");
 
-	//  Fail
-	Console.WriteLine("==================");
-	Console.WriteLine("=====  Add New Category Fail =====");
-	Console.WriteLine("==================");
-
-	//  create a new category view model for adding/editing
-	//	required so that we have a categoryID of 0
-	categoryView = new CategoryView();
-
-	//	update the category name with an category name
-	categoryView.CategoryName = categoryName;
-
-	//  Fail
-	//  rule:	category cannot be duplicated (found more than once)
-	TestAddEditCategory(categoryView).Dump($"Fail - Category {categoryName} already exist");
 	#endregion
 
-	#region Edit Category
-	//  Header information
-	Console.WriteLine("==================");
-	Console.WriteLine("=====  Edit Existing Category  =====");
-	Console.WriteLine("==================");
-
-	//  get last 5 records from the category table 
-	//	before editing existing category record
-	Categories.Skip(Categories.Count() - 5).Dump("Return last 5 records before editing existing category");
-
-	//  get existing category using categoryname placeholder
-	string previousCategoryName = categoryName;
-	categoryView = GetCategory(categoryName);
-
-	//  validate that the category view is the one that we want.
-	categoryView.Dump($"Valid category has category name of {categoryName}");
-
-	//  Pass
-	Console.WriteLine("==================");
-	Console.WriteLine("=====  Edit Category Pass =====");
-	Console.WriteLine("==================");
-
-	//  update category name with a 10 character name
-	categoryName = GenerateName(10);
-	categoryView.CategoryName = categoryName;
-	TestAddEditCategory(categoryView).Dump($"Pass - Category name has been updated from {previousCategoryName} to {categoryName}");
-
-	//  get last 5 records from the category table 
-	//	after editing existing category record
-	Categories.Skip(Categories.Count() - 5).Dump("Return last 5 records after editing existing category");
-	#endregion
 }
 
 //	This region contains methods used for testing the functionality
 //	of the application's business logic and ensuring correctness.
 #region Test Methods
-public CategoryView TestGetCategory(string categoryName)
+public LookupView TestGetLookup(string lookupName)
 {
 	try
 	{
-		return GetCategory(categoryName);
+		return GetLookup(lookupName);
 	}
 
 	#region catch all exception
@@ -161,12 +122,12 @@ public CategoryView TestGetCategory(string categoryName)
 	#endregion
 	return null;  //  Ensure a valid return value even on failure
 }
-
-public CategoryView TestAddEditCategory(CategoryView categoryView)
+//	test Add Edit Lookup
+public LookupView TestAddEditLookup(LookupView lookupView)
 {
 	try
 	{
-		return AddEditCategory(categoryView);
+		return AddEditLookup(lookupView);
 	}
 
 	#region catch all exception
@@ -241,7 +202,7 @@ public string GenerateName(int len)
 //	for executing business logic and operations.
 #region Methods
 //  Get category
-public CategoryView GetCategory(string categoryName)
+public LookupView GetLookup(string lookupName)
 {
 	#region Business Logic and Parameter Exceptions
 	//	create a list<Exception> to contain all discovered errors
@@ -249,26 +210,27 @@ public CategoryView GetCategory(string categoryName)
 	//  Business Rules
 	//	These are processing rules that need to be satisfied
 	//		for valid data
-	//		rule: 	category name is required
-	if (string.IsNullOrWhiteSpace(categoryName))
+	//		rule: 	lookup name is required
+	if (string.IsNullOrWhiteSpace(lookupName))
 	{
-		throw new ArgumentNullException("Category name is required");
+		throw new ArgumentNullException("Lookup name is required");
 	}
 	#endregion
 
-	return Categories
-			.Where(x => x.CategoryName == categoryName
+	return Lookups
+			.Where(x => x.Name == lookupName
 						&& x.RemoveFromViewFlag == false)
-			.Select(x => new CategoryView
+			.Select(x => new LookupView
 			{
+				LookupID = x.LookupID,
 				CategoryID = x.CategoryID,
-				CategoryName = x.CategoryName,
+				Name = x.Name,
 				RemoveFromViewFlag = x.RemoveFromViewFlag
 			}).FirstOrDefault();
 }
 
-//	Add or edit a new or existing category
-public CategoryView AddEditCategory(CategoryView categoryView)
+//	Add or edit a new or existing lookop
+public LookupView AddEditLookup(LookupView lookupView)
 {
 	#region Business Logic and Parameter Exceptions
 	//	create a list<Exception> to contain all discovered errors
@@ -276,55 +238,65 @@ public CategoryView AddEditCategory(CategoryView categoryView)
 	//  Business Rules
 	//	These are processing rules that need to be satisfied
 	//		for valid data
-	//		rule: 	categoryView cannot be null
-	//		rule: 	category name is required
-	if (categoryView == null)
+	//		rule: 	lookupView cannot be null
+	//		rule: 	category id is required
+	//		rule: 	lookup name is required
+	if (lookupView == null)
 	{
-		throw new ArgumentNullException("No category was supply");
+		throw new ArgumentNullException("No lookup was supply");
 	}
 
-	if (string.IsNullOrWhiteSpace(categoryView.CategoryName))
+	if (lookupView.CategoryID == 0)
 	{
-		errorList.Add(new Exception("Category name is required"));
+		throw new ArgumentNullException("No category id was supply");
 	}
 
-	//	rule:  category cannot be duplicated (found more than once)
-	if (categoryView.CategoryID == 0)
+	if (string.IsNullOrWhiteSpace(lookupView.Name))
 	{
-		bool categoryExist = Categories
-						.Where(x => x.CategoryName == categoryView.CategoryName)
+		errorList.Add(new Exception("Lookup name is required"));
+	}
+
+	//	rule:  lookup cannot be duplicated for category id that is provided
+	//			(found more than once)
+	if (lookupView.LookupID == 0)
+	{
+		bool lookupExist = Lookups
+						.Where(x => x.CategoryID == lookupView.CategoryID
+							&& x.Name == lookupView.Name)
 						.Any();
 
-		if (categoryExist)
+		if (lookupExist)
 		{
-			errorList.Add(new Exception("Category already exist in the database and cannot be enter again"));
+			errorList.Add(new Exception("Lookup already exist in the database and cannot be enter again"));
 		}
 	}
 	#endregion
 
 	// check to see if the category exist in the database
-	Category category =
-			Categories.Where(x => x.CategoryID == categoryView.CategoryID)
+	Lookup lookup =
+			Lookups.Where(x => x.LookupID == lookupView.LookupID)
 			.Select(x => x).FirstOrDefault();
 
-	//  if the category was not found (CategoryID == 0)
-	//		then we are dealing with a new category
-	if (category == null)
+	//  if the lookup was not found (LookupID == 0)
+	//		then we are dealing with a new lookup
+	if (lookup == null)
 	{
-		category = new Category();
+		lookup = new Lookup();
+		//	Updating category ID only when we have a new lookup.
+		lookup.CategoryID = lookupView.CategoryID;
 	}
 
-	// 	Updating category name.
-	//	NOTE:  	You do not have to update the primary key "CategoryID".
+	// 	Updating lookup name.
+	//	NOTE:  	You do not have to update the primary key "LookupID".
 	//				This is true for all primary keys for any view models.
-	//			- If it is a new category, the CategoryID will be "0"
-	//			- If it is an existing category, there is no need
+	//			- If it is a new lookup, the LookupID will be "0"
+	//			- If it is an existing lookup, there is no need
 	//				to update it.
 
-	category.CategoryName = categoryView.CategoryName;
+	lookup.Name = lookupView.Name;
 
 	//	You must set the RemoveFromViewFlag incase it has been soft delete
-	category.RemoveFromViewFlag = categoryView.RemoveFromViewFlag;
+	lookup.RemoveFromViewFlag = lookupView.RemoveFromViewFlag;
 
 	//	If there are errors present in the error list:
 	//	NOTE:  YOU CAN ONLY HAVE ONE CHECK FOR ERRORS AND SAVE CHANGES
@@ -335,31 +307,34 @@ public CategoryView AddEditCategory(CategoryView categoryView)
 		//	Otherwise we leave our entity system in flux
 		ChangeTracker.Clear();
 		//	Throw an AggregateException containing the list of business processing errors.
-		throw new AggregateException("Unable to add or edit category. Please check error message(s)", errorList);
+		throw new AggregateException("Unable to add or edit lookup. Please check error message(s)", errorList);
 	}
 	else
 	{
-		if (category.CategoryID == 0)
-			//	Adding a new category record to the Category table
-			Categories.Add(category);
+		if (lookup.LookupID == 0)
+			//	Adding a new lookup record to the lookup table
+			Lookups.Add(lookup);
 		else
-			//	Updating an category record in the Category table
-			Categories.Update(category);
+			//	Updating an lookup record in the lookup table
+			Lookups.Update(lookup);
 
 		//	NOTE:  YOU CAN ONLY HAVE ONE SAVE CHANGES IN A METHOD	
 		SaveChanges();
 	}
-	return GetCategory(categoryView.CategoryName);
+	lookupView.LookupID = lookup.LookupID;
+	return lookupView;
 }
+
 #endregion
 
 //	This region includes the view models used to 
 //	represent and structure data for the UI.
 #region View Models
-public class CategoryView
+public class LookupView
 {
+	public int LookupID { get; set; }
 	public int CategoryID { get; set; }
-	public string CategoryName { get; set; }
+	public string Name { get; set; }
 	public bool RemoveFromViewFlag { get; set; }
 }
 #endregion
