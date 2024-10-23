@@ -5,7 +5,7 @@ VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HogWildWebApp", "HogWildWebApp\HogWildWebApp.csproj", "{B8A44129-EA13-49FB-9638-B84A16585021}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HogWildSystem", "HogWildSystem\HogWildSystem.csproj", "{6563B672-A751-4C1D-8037-D2D2188B8831}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HogWildSystem", "HogWildSystem\HogWildSystem.csproj", "{6563B672-A751-4C1D-8037-D2D2188B8831}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
