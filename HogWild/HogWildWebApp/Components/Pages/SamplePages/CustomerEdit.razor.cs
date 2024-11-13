@@ -2,7 +2,7 @@
 using HogWildSystem.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using static MudBlazor.Icons;
+using MudBlazor;
 
 namespace HogWildWebApp.Components.Pages.SamplePages
 {
@@ -19,10 +19,13 @@ namespace HogWildWebApp.Components.Pages.SamplePages
         private List<LookupView> countries = new();
         //  The status lookup
         private List<LookupView> statusLookup = new();
+        // close button text
+        private string closeButtonText = "Close";
+
+        // close button color
+        private Color closeButtonColor = Color.Success;
         // the edit context
         private EditContext editContext;
-        // close button text
-        private string closeButtonText;
         #endregion
 
         #region Feedback & Error Messages
@@ -51,6 +54,14 @@ namespace HogWildWebApp.Components.Pages.SamplePages
 
         //  The category lookup service
         [Inject] protected CategoryLookupService CategoryLookupService { get; set; }
+
+        // Injects the NavigationManager dependency.
+        [Inject]
+        protected NavigationManager NavigationManager { get; set; }
+
+        // The dialog service
+        [Inject]
+        protected IDialogService DialogService { get; set; }
 
         //  Customer ID used to create or edit a customer
         [Parameter] public int CustomerID { get; set; } = 0;
@@ -118,7 +129,10 @@ namespace HogWildWebApp.Components.Pages.SamplePages
                 //  reset feedback message to an empty string
                 feedbackMessage = string.Empty;
 
-               
+                //  saving the customer
+                customer = CustomerService.AddEditCustomer(customer);
+                feedbackMessage = "Data was successfully saved";
+
             }
             catch (ArgumentNullException ex)
             {
@@ -146,7 +160,7 @@ namespace HogWildWebApp.Components.Pages.SamplePages
 
         private async void Cancel()
         {
-
+            NavigationManager.NavigateTo("/SamplePages/CustomerList/");
         }
     }
 }
